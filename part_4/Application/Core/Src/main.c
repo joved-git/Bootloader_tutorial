@@ -32,7 +32,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define MAJOR	0	/* Major version number	*/
-#define MINOR	5	/* Minor version number	*/
+#define MINOR	4	/* Minor version number	*/
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,7 +42,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart6;
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 const uint8_t App_Version [2] = { MAJOR, MINOR };
@@ -51,8 +51,21 @@ const uint8_t App_Version [2] = { MAJOR, MINOR };
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART6_UART_Init(void);
+static void MX_USART2_UART_Init(void);
+
 /* USER CODE BEGIN PFP */
+
+void printd(char *pMsg)
+{
+	//strcat(pMsg, "\r\n");
+	HAL_UART_Transmit(&huart2, pMsg, strlen(pMsg), 0xFFFF);
+}
+
+void printdln(char *pMsg)
+{
+	strcat(pMsg, "\r\n");
+	HAL_UART_Transmit(&huart2, pMsg, strlen(pMsg), 0xFFFF);
+}
 
 /* USER CODE END PFP */
 
@@ -68,7 +81,7 @@ static void MX_USART6_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  char txt[64];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -89,9 +102,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART6_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("\bStarting Application (v%d.%d)\n", App_Version[0], App_Version[1]);
+  sprintf(txt, "\bStarting Application (v%d.%d)\n", App_Version[0], App_Version[1]);
+  printd(txt);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -102,9 +116,17 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);			/* Blue led is ON	*/
-	HAL_Delay(5000);											/* Delay 1 second	*/
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);		/* Blue led is OFF	*/
-	HAL_Delay(5000);											/* Delay 1 second	*/
+	HAL_Delay(200);													/* Delay 200 ms		*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);				/* Blue led is OFF	*/
+	HAL_Delay(200);													/* Delay 200 ms		*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);			/* Blue led is ON	*/
+	HAL_Delay(200);													/* Delay 200 ms		*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);				/* Blue led is OFF	*/
+	HAL_Delay(200);													/* Delay 200 ms		*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);			/* Blue led is ON	*/
+	HAL_Delay(200);													/* Delay 200 ms		*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);				/* Blue led is OFF	*/
+	HAL_Delay(750);													/* Delay 750 ms		*/
   }
   /* USER CODE END 3 */
 }
@@ -151,35 +173,35 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief USART6 Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART6_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART6_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END USART6_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN USART6_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END USART6_Init 1 */
-  huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
-  huart6.Init.Mode = UART_MODE_TX_RX;
-  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart6) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART6_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END USART6_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -191,10 +213,12 @@ static void MX_USART6_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
@@ -206,6 +230,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -219,7 +245,7 @@ int fputc(int ch, FILE *f)
 {
 	/* Place the implementation of putc here */
 	/* e.g. write a character to the UART6 and loop until the end of transmission */
-	HAL_UART_Transmit(&huart6, (uint8_t *) &ch,1, HAL_MAX_DELAY);
+	//HAL_UART_Transmit(&huart6, (uint8_t *) &ch,1, HAL_MAX_DELAY);
 
 	return ch;
 }
