@@ -26,7 +26,7 @@ $ make
 #include <string.h>
 
 //#define DEBUG         /* If you want to debug the code  */
-#define VERSION   "1.2"
+#define VERSION   "1.3"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -409,7 +409,15 @@ int main(int argc, char *argv[])
     if (argc <= 2)
     {
       printf("Please feed the COM PORT number and the Application Image....!!!\n");
-      printf("Example: .\\etx_ota_app.exe 8 ..\\..\\Application\\Debug\\Blinky.bin");
+      printf("Example: .\\etx_ota_app.exe 8 ..\\..\\debug\\blinky.bin");
+
+      printf("\nAvailable ports:\n");
+
+      for (int i=0; i<RS232_PORTNR/2; i++)
+      {
+        printf("%2d:   %s\t%2d: %s\n", i, comports[i], i+RS232_PORTNR/2, comports[i+RS232_PORTNR/2]);
+      }
+
       ex = -1;
       break;
     }
