@@ -5,7 +5,7 @@ EXEC=ota_update
 
 all: $(EXEC)
 
-$(EXEC): 
+$(EXEC): ota_update.c
 	$(CC) $@.c $(CFLAGS) -o $@
 
 clean:
