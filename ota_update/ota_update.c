@@ -26,6 +26,7 @@ $ make
 #include <string.h>
 
 //#define DEBUG         /* If you want to debug the code  */
+#define VERSION   "1.2"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -400,6 +401,8 @@ int main(int argc, char *argv[])
   char bin_name[1024];
   int ex = 0;
   FILE *Fptr = NULL;
+
+  printf("OTA update v%s\n\n", VERSION);
 
   do
   {
