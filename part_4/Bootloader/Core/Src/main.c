@@ -33,7 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define MAJOR	2	/* Major version number	*/
-#define MINOR	8	/* Minor version number	*/
+#define MINOR	9	/* Minor version number	*/
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

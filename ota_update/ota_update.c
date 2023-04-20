@@ -26,7 +26,7 @@ $ make
 #include <string.h>
 
 //#define DEBUG         /* If you want to debug the code  */
-#define VERSION   "1.3.1"
+#define VERSION   "1.3.4"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -72,6 +72,10 @@ void delay(uint32_t us)
 /* read the response */
 bool is_ack_resp_received(int comport)
 {
+#ifdef DEBUG
+  printf("***  debug 5.1");
+#endif
+
   bool is_ack = false;
   uint8_t *pBuf=NULL;
 
@@ -81,6 +85,10 @@ bool is_ack_resp_received(int comport)
   uint16_t len = 0;
   uint16_t i = 0;
   bool removeZero=true;
+
+#ifdef DEBUG
+  printf("***  debug 5.2");
+#endif
 
   /* Read the answer (ACK or NACK)  */
   do
@@ -93,6 +101,10 @@ bool is_ack_resp_received(int comport)
     i += len;
   } 
   while (DATA_BUF[i - 1] != 0xBB);
+
+#ifdef DEBUG
+  printf("***  debug 5.3");
+#endif
 
   /* Remove zero in front of the received bytes */
   pBuf=DATA_BUF;
@@ -109,8 +121,14 @@ bool is_ack_resp_received(int comport)
       removeZero=false;
     }
   }
-  
+
 #ifdef DEBUG
+  printf("***  debug 5.4");
+#endif
+
+#ifdef DEBUG
+  printf("\n");
+
   for (int j=0; j<i; j++)
   {
     printf("%02X.", pBuf[j]);
@@ -138,6 +156,10 @@ bool is_ack_resp_received(int comport)
       }
     }
   }
+
+#ifdef DEBUG
+  printf("***  debug 5.8");
+#endif
 
   return is_ack;
 }
@@ -358,14 +380,6 @@ int send_ota_data(int comport, uint8_t *data, uint16_t data_len)
   // send OTA Data
   for (int i = 0; i < len; i++)
   {
-
-    /*
-    if (len > 100 && count < 32)
-    {
-      printf("%02X.", DATA_BUF[count]);
-    }
-    */
-
     delay(1);
 
     if (write(comport, &DATA_BUF[i], 1)==0)
@@ -377,10 +391,17 @@ int send_ota_data(int comport, uint8_t *data, uint16_t data_len)
     }
   }
 
-  //printf("End of sending data [tot=%d]\n", i);
+#ifdef DEBUG
+  printf("*** debug 5a [ex=%d]", ex);
+#endif
 
   if (ex >= 0)
   {
+
+#ifdef DEBUG
+    printf("*** debug 5b");
+#endif
+
     if (!is_ack_resp_received(comport))
     {
       // Received NACK
@@ -388,6 +409,11 @@ int send_ota_data(int comport, uint8_t *data, uint16_t data_len)
       ex = -1;
     }
   }
+
+#ifdef DEBUG
+  printf("***  debug 6");
+#endif
+
   // printf("OTA DATA [ex = %d]\n", ex);
   return ex;
 }
@@ -555,6 +581,8 @@ int main(int argc, char *argv[])
     uint16_t size = 0;
     uint8_t pack=1;
 
+    delay(100);
+
     for (uint32_t i = 0; i < app_size; )
     {
       if ((app_size - i) >= ETX_OTA_DATA_MAX_SIZE)
@@ -566,7 +594,7 @@ int main(int argc, char *argv[])
         size = app_size - i;
       }
 
-      printf("\n>>> app size=%d size=%d i=%d\n", app_size, size, i);
+      printf("\n>>> sending OTA Data (tot=%d size=%d i=%d)\n", app_size, size, i+size);
       // printf("[%d/%d]\r\n", i/ETX_OTA_DATA_MAX_SIZE, app_size/ETX_OTA_DATA_MAX_SIZE);
       //printf("\n>>> Sending Data #%d [%d bytes]\n", pack, size);
 

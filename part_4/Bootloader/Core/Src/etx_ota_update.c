@@ -55,7 +55,11 @@ ETX_OTA_EX_ etx_ota_download_and_flash( void )
     memset( Rx_Buffer, 0, ETX_OTA_PACKET_MAX_SIZE );
 
     //printf("wait for data...\r\n");
-    len = etx_receive_chunk( Rx_Buffer, ETX_OTA_PACKET_MAX_SIZE );
+
+    do {
+    	len = etx_receive_chunk( Rx_Buffer, ETX_OTA_PACKET_MAX_SIZE );
+    }
+    while (!len);
 
     sprintf(txt, "len_1=%d\n", len);
     printd(txt);
@@ -68,7 +72,7 @@ ETX_OTA_EX_ etx_ota_download_and_flash( void )
     sprintf(txt, "\n");
     printd(txt);
 
-    if( len != 0u )
+    if ( len != 0u )
     {
       ret = etx_process_data( Rx_Buffer, len );
       //sprintf(txt, "toto 2\n");
