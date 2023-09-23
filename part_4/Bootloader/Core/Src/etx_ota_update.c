@@ -192,6 +192,11 @@ static ETX_OTA_EX_ etx_process_data( uint8_t *buf, uint16_t len )
 
           ex = write_data_to_flash_app( buf+4, data_len, ( ota_fw_received_size == 0) );
 
+          /* Blink red led during update	*/
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET);		/* Red led is OFF	*/
+          HAL_Delay(200);
+          HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);		/* Red led is ON	*/
+
           if ( ex == HAL_OK )
           {
         	sprintf(txt, "   > HAL_OK\n");
@@ -413,8 +418,7 @@ static uint16_t etx_receive_chunk( uint8_t *buf, uint16_t max_len )
 
   if ( max_len < index )
   {
-    sprintf(txt, "Received more data than expected. Expected = %d, Received = %d\r\n",
-                                                              max_len, index );
+    sprintf(txt, "Received more data than expected. Expected = %d, Received = %d\r\n", max_len, index );
     printdln(txt);
 
     index = 0u;

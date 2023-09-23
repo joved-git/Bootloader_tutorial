@@ -5,6 +5,8 @@
  *      Author: EmbeTronicX
  */
 
+#include <stdint.h>
+
 #ifndef INC_ETX_OTA_UPDATE_H_
 #define INC_ETX_OTA_UPDATE_H_
 
