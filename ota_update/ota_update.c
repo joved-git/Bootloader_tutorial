@@ -6,6 +6,8 @@ purpose: -
   -host application that updates STM32 with bootloader level 2.
   -use open(), read() and write() commands to acces UART.
 
+By Joved ()
+
 compile with the command: 
 $ gcc ota_update.c -Wall -Wextra -o2 -o ota_update
 

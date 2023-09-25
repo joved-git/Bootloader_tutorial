@@ -13,7 +13,6 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -33,7 +32,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define MAJOR	3	/* Major version number	*/
-#define MINOR	1	/* Minor version number	*/
+#define MINOR	2	/* Minor version number	*/
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,7 +109,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  sprintf(txt, "Starting Update Booltoader (v%d.%d)", BL_Version[0], BL_Version[1]);
+  sprintf(txt, "Starting Bootloader (v%d.%d)", BL_Version[0], BL_Version[1]);
   printdln(txt);
 
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);		/* Green led is ON	*/
