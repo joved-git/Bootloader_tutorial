@@ -13,7 +13,6 @@
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
-  ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -22,6 +21,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "etx_ota_update.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,8 +31,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAJOR	0	/* Major version number	*/
-#define MINOR	6	/* Minor version number	*/
+#define MAJOR	3	/* Major version number	*/
+#define MINOR	2	/* Minor version number	*/
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,6 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 const uint8_t BL_Version [2] = { MAJOR, MINOR };
@@ -51,15 +52,25 @@ const uint8_t BL_Version [2] = { MAJOR, MINOR };
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART6_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void goto_application(void);
 
 void printd(char *pMsg)
 {
+	//strcat(pMsg, "\r\n");
+	HAL_UART_Transmit(&huart2, pMsg, strlen(pMsg), 0xFFFF);
+}
+
+void printdln(char *pMsg)
+{
 	strcat(pMsg, "\r\n");
 	HAL_UART_Transmit(&huart2, pMsg, strlen(pMsg), 0xFFFF);
 }
+
+static char txt[64];
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -74,8 +85,7 @@ void printd(char *pMsg)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  char txt[64];
-
+  //char txt[64];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,12 +106,65 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART6_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  sprintf(txt, "Starting Booltoader (v%d.%d)\n", BL_Version[0], BL_Version[1]);
-  printd(txt);
+  sprintf(txt, "Starting Bootloader (v%d.%d)", BL_Version[0], BL_Version[1]);
+  printdln(txt);
+
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);		/* Green led is ON	*/
-  HAL_Delay(2000);			/* Delay 2 seconds	*/
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET);		/* Red led is OFF	*/
+  //HAL_Delay(2000);			/* Delay 2 seconds	*/
+
+  /* Check the GPIO during 3 seconds */
+  GPIO_PinState OTA_Pin_state;
+  uint32_t end_tick = HAL_GetTick() + 3000;   // from now to 3 Seconds
+
+  sprintf(txt, "Press the Joystick central button to trigger OTA update...");
+  printdln(txt);
+
+  do
+  {
+    OTA_Pin_state = HAL_GPIO_ReadPin( GPIOA, GPIO_PIN_0 );
+    uint32_t current_tick = HAL_GetTick();
+
+    /* Check the button is pressed or not during 3 seconds. After go to application	*/
+    if( ( OTA_Pin_state != GPIO_PIN_RESET ) || ( current_tick > end_tick ) )
+    {
+      /* Either timeout or Button is pressed */
+      break;
+    }
+  } while (1);
+
+  /*Start the Firmware or Application update */
+  if (OTA_Pin_state == GPIO_PIN_SET)
+  {
+    sprintf(txt, "Starting Firmware Download !!!");
+    printdln(txt);
+
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
+
+    /* OTA Request. Receive the data from the UART4 and flash */
+    if( etx_ota_download_and_flash() != ETX_OTA_EX_OK )
+    {
+      /* Error. Don't process. */
+      sprintf(txt, "OTA Update : ERROR !!! HALT !!!");
+      printdln(txt);
+
+      while( 1 );
+   }
+   else
+   {
+      /* Reset to load the new application */
+      sprintf(txt, "Firmware update is done !!! Rebooting...");
+      printdln(txt);
+      HAL_NVIC_SystemReset();
+    }
+  }
+
+  sprintf(txt, "Starting application...");
+  printdln(txt);
 
   goto_application();
   /* USER CODE END 2 */
@@ -192,6 +255,39 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 115200;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -203,18 +299,25 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2|GPIO_PIN_0, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PE0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PE2 PE0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -225,6 +328,7 @@ static void MX_GPIO_Init(void)
  * @brief Print the characters to UART (printf)
  * @retval int
  */
+
 ////#ifdef __GNUC__
 /////* With GCC, small printf (option LD linker->Librarie->Small printf
 ////   set to 'Yes') calls __io_putchar() */
@@ -239,6 +343,7 @@ static void MX_GPIO_Init(void)
 ////
 ////	return ch;
 ////}
+
 
 static void goto_application(void)
 {
